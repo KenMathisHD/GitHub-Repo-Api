@@ -2,9 +2,10 @@ import React, { Component, useState } from "react";
 import $ from "jquery";
 import { marked } from "marked";
 
+import Markdown from "./components/markdown/markdown";
+
 import logo from "./logo.svg";
 import "./App.css";
-import Markdown from "./components/markdown/markdown";
 
 class App extends Component {
   state = { repos: [], markdown: "", currentRepo: "", defaultBranch: "" };
