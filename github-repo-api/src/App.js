@@ -20,6 +20,21 @@ class App extends Component {
     }
   }
 
+  render() {
+    const repoNames = this.getRepoNames(this.state.repos);
+    return (
+      <div className="App-header">
+        <h1>GitHub Repository API Frontend</h1>
+        <div className="container">
+          <Sidebar
+            repos={repoNames}
+            handleClick={this.handleClick.bind(this)}
+          ></Sidebar>
+          <Markdown md={this.state.markdown}></Markdown>
+        </div>
+      </div>
+    );
+  }
   async getRepos(user) {
     let repos = [];
 
@@ -29,17 +44,14 @@ class App extends Component {
       })
       .then((text) => {
         const data = [...JSON.parse(text)];
-        data.map((repo) => {
-          repos.push(repo);
-        });
+        repos = [...data];
       });
 
     return repos;
   }
 
   getMarkdown(currentRepo) {
-    const repoObj = this.getRepo(currentRepo);
-    const { default_branch, name: repo } = repoObj;
+    const { default_branch, name: repo } = this.getRepo(currentRepo);
     fetch(
       `https://raw.githubusercontent.com/${this.state.user}/${repo}/${default_branch}/README.md`
     )
@@ -52,9 +64,7 @@ class App extends Component {
   }
 
   getRepo(repo) {
-    const currentRepo = this.state.repos.find((o) => o.name === repo);
-    console.log(currentRepo);
-    return currentRepo;
+    return this.state.repos.find((o) => o.name === repo);
   }
 
   getRepoNames(repos) {
@@ -66,26 +76,7 @@ class App extends Component {
   }
 
   handleClick(repo) {
-    console.log(repo);
-    console.log(this.state.user);
     this.getMarkdown(repo);
-  }
-
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <h1>GitHub Repository API Frontend</h1>
-          <div className="container">
-            <Sidebar
-              repos={this.getRepoNames(this.state.repos)}
-              handleClick={this.handleClick.bind(this)}
-            ></Sidebar>
-            <Markdown md={this.state.markdown}></Markdown>
-          </div>
-        </header>
-      </div>
-    );
   }
 }
 
