@@ -13,24 +13,26 @@ class App extends Component {
   };
 
   async componentDidMount() {
-    const data = await this.getRepos(this.state.user);
+    const { user, markdown } = this.state;
+    const data = await this.getRepos(user);
     this.setState({ repos: data });
-    if (this.state.markdown === "") {
+    if (markdown === "") {
       this.getMarkdown(data[0].name);
     }
   }
 
   render() {
-    const repoNames = this.getRepoNames(this.state.repos);
+    const { repos, markdown } = this.state;
+    const repoNames = this.getRepoNames(repos);
     return (
-      <div className="App-header">
+      <div className="app-header">
         <h1>GitHub Repository API Frontend</h1>
         <div className="container">
           <Sidebar
             repos={repoNames}
             handleClick={this.handleClick.bind(this)}
           ></Sidebar>
-          <Markdown md={this.state.markdown}></Markdown>
+          <Markdown md={markdown}></Markdown>
         </div>
       </div>
     );
