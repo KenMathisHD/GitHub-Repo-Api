@@ -1,86 +1,92 @@
-import React, { Component, useState } from "react";
-import $ from "jquery";
-import { marked } from "marked";
+import React, { Component } from "react";
 
 import Markdown from "./components/markdown/markdown";
-
-import logo from "./logo.svg";
-import "./App.css";
+import Sidebar from "./components/sidebar/sidebar";
+import { marked } from "marked";
+import "./App.scss";
 
 class App extends Component {
-  state = { repos: [], markdown: "", currentRepo: "", defaultBranch: "" };
+  state = {
+    repos: [],
+    markdown: "",
+    user: window.location.href.split("/github/")[1],
+  };
 
   async componentDidMount() {
-    const data = await this.getRepos("KenMathisHD");
+    const data = await this.getRepos(this.state.user);
+    this.setState({ repos: data });
+    if (this.state.markdown === "") {
+      this.getMarkdown(data[0].name);
+    }
+  }
 
-    this.setState({
-      repos: data,
-      currentRepo: data[0].name,
-      defaultBranch: data[0].default_branch,
+  async getRepos(user) {
+    let repos = [];
+
+    await fetch(`https://api.github.com/users/${user}/repos`)
+      .then((response) => {
+        return response.text();
+      })
+      .then((text) => {
+        const data = [...JSON.parse(text)];
+        data.map((repo) => {
+          repos.push(repo);
+        });
+      });
+
+    return repos;
+  }
+
+  getMarkdown(currentRepo) {
+    const repoObj = this.getRepo(currentRepo);
+    const { default_branch, name: repo } = repoObj;
+    fetch(
+      `https://raw.githubusercontent.com/${this.state.user}/${repo}/${default_branch}/README.md`
+    )
+      .then((response) => {
+        return response.text();
+      })
+      .then((text) => {
+        this.setState({ markdown: marked(text) });
+      });
+  }
+
+  getRepo(repo) {
+    const currentRepo = this.state.repos.find((o) => o.name === repo);
+    console.log(currentRepo);
+    return currentRepo;
+  }
+
+  getRepoNames(repos) {
+    const repoNames = [];
+    repos.forEach((repo) => {
+      repoNames.push(repo.name);
     });
+    return repoNames;
+  }
 
-    this.getMarkdown(
-      "KenMathisHD",
-      this.state.currentRepo,
-      this.state.defaultBranch
-    );
+  handleClick(repo) {
+    console.log(repo);
+    console.log(this.state.user);
+    this.getMarkdown(repo);
   }
 
   render() {
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload. .
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          <Markdown md={this.state.markdown}></Markdown>
+          <h1>GitHub Repository API Frontend</h1>
+          <div className="container">
+            <Sidebar
+              repos={this.getRepoNames(this.state.repos)}
+              handleClick={this.handleClick.bind(this)}
+            ></Sidebar>
+            <Markdown md={this.state.markdown}></Markdown>
+          </div>
         </header>
       </div>
     );
   }
-
-  async getRepos(user) {
-    const repos = [];
-    await $.get(`https://api.github.com/users/${user}/repos`, function (data) {
-      data.map((repo) => {
-        repos.push(repo);
-      });
-    });
-    console.log(repos);
-    return repos;
-  }
-
-  getMarkdown(user, repo, branch) {
-    fetch(
-      `https://raw.githubusercontent.com/${user}/${repo}/${branch}/README.md`
-    )
-      .then((response) => {
-        return response.text();
-      })
-      .then((text) => {
-        this.setState({
-          markdown: marked(text),
-        });
-      });
-  }
-
-  reposList = () => {
-    const { repos } = this.state;
-    const repoNames = [];
-    repos.map((repo) => {
-      repoNames.push(repo.name);
-    });
-    return repoNames;
-  };
 }
 
 export default App;
