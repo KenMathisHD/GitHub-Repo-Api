@@ -1,3 +1,22 @@
 .readme {
+  flex: 1;
+  flex-shrink: 0;
+  align-self: stretch;
+  padding: 0 10px;
   text-align: left;
+  border-left: 2px solid black;
+
+  h2 {
+    margin: 0;
+    padding: 0;
+  }
+
+  article {
+    code {
+      width: 100%;
+      display: block;
+      white-space: pre-wrap;
+      background-color: rgba(175, 184, 193, 0.2);
+    }
+  }
 }

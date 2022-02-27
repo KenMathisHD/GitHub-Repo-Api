@@ -4,13 +4,13 @@ import "./sidebar.scss";
 function Sidebar(props) {
   const { repos, handleClick } = props;
   return (
-    <ul className="sidebar">
+    <nav className="sidebar">
       {repos.map((repo, key) => (
-        <li key={key} onClick={() => handleClick(repo)}>
-          <span>{repo}</span>
-        </li>
+        <button className="button" key={key} onClick={() => handleClick(repo)}>
+          {repo}
+        </button>
       ))}
-    </ul>
+    </nav>
   );
 }
 
