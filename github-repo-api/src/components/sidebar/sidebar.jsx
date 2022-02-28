@@ -2,9 +2,9 @@ import React from "react";
 import "./sidebar.scss";
 
 function Sidebar(props) {
-  const { repos, handleClick } = props;
+  const { repos, handleClick, handleScroll } = props;
   return (
-    <nav className="sidebar">
+    <nav id="sidebar" className="sidebar" onScroll={(e) => onScroll(e)}>
       {repos.map((repo, key) => (
         <button className="button" key={key} onClick={() => handleClick(repo)}>
           {repo}
@@ -12,6 +12,13 @@ function Sidebar(props) {
       ))}
     </nav>
   );
+
+  function onScroll(e) {
+    const { target } = e;
+    if (target.scrollTop === target.scrollHeight - target.clientHeight) {
+      handleScroll();
+    }
+  }
 }
 
 export default Sidebar;
