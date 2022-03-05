@@ -3,6 +3,8 @@ import React, { Component } from "react";
 import Markdown from "./components/markdown/markdown";
 import Sidebar from "./components/sidebar/sidebar";
 
+import { getRepos, getRepoCount, getMarkdown } from "./utils/dataFetches";
+import { getRepoNames, getRepo } from "./utils/functions";
 import { marked } from "marked";
 import "./App.scss";
 
@@ -18,25 +20,28 @@ class App extends Component {
   };
 
   async componentDidMount() {
-    const { user, markdown, repoCount, currentPage } = this.state;
-    const totalCount = await this.getRepoCount(user, repoCount);
-    const data = await this.getRepos(user, currentPage);
+    const { user, markdown, repoCount, currentPage, pageSize } = this.state;
+    const totalCount = await getRepoCount(user, repoCount);
+    const data = await getRepos(user, currentPage);
     this.setState({ repos: data, repoCount: totalCount });
 
     if (markdown === "") {
-      this.getMarkdown(data, data[0].name);
+      const markdown = await getMarkdown(user, getRepo(data, data[0].name));
+      this.setState({ markdown: marked(markdown) });
     }
   }
 
-  handleClick(repo) {
-    this.getMarkdown(this.state.repos, repo);
+  async handleClick(repo) {
+    const { user, repos } = this.state;
+    const markdown = await getMarkdown(user, getRepo(repos, repo));
+    this.setState({ markdown: marked(markdown) });
   }
 
   async handleScroll() {
     const { currentPage, repos, repoCount, user, pageSize } = this.state;
     const nextPage = currentPage + 1;
     if (nextPage < repoCount / pageSize + 1) {
-      const nextRepos = await this.getRepos(user, nextPage, pageSize);
+      const nextRepos = await getRepos(user, nextPage, pageSize);
       const updatedRepos = [...repos, ...nextRepos];
       this.setState({ repos: updatedRepos, currentPage: nextPage });
     }
@@ -44,7 +49,7 @@ class App extends Component {
 
   render() {
     const { repos, markdown } = this.state;
-    const repoNames = this.getRepoNames(repos);
+    const repoNames = getRepoNames(repos);
 
     return (
       <div className="app-header">
@@ -59,61 +64,6 @@ class App extends Component {
         </div>
       </div>
     );
-  }
-  async getRepoCount(user, repoCount) {
-    if (repoCount === 0) {
-      await fetch(`https://api.github.com/users/${user}`)
-        .then((response) => {
-          return response.text();
-        })
-        .then((text) => {
-          const data = JSON.parse(text);
-          repoCount = data.public_repos;
-        });
-      return repoCount;
-    }
-  }
-  async getRepos(user, currentPage, pageSize) {
-    let repos = [];
-
-    await fetch(
-      `https://api.github.com/users/${user}/repos?page=${currentPage}&per_page=${pageSize}`
-    )
-      .then((response) => {
-        return response.text();
-      })
-      .then((text) => {
-        const data = [...JSON.parse(text)];
-        repos = [...data];
-      });
-
-    return repos;
-  }
-
-  getMarkdown(repos, currentRepo) {
-    const { default_branch, name: repo } = this.getRepo(repos, currentRepo);
-    fetch(
-      `https://raw.githubusercontent.com/${this.state.user}/${repo}/${default_branch}/README.md`
-    )
-      .then((response) => {
-        return response.text();
-      })
-      .then((text) => {
-        this.setState({ markdown: marked(text) });
-      });
-  }
-
-  getRepo(repos, repo) {
-    return repos.find((o) => o.name === repo);
-  }
-
-  getRepoNames(repos) {
-    const repoNames = [];
-    repos.forEach((repo) => {
-      repoNames.push(repo.name);
-    });
-
-    return repoNames;
   }
 }
 
