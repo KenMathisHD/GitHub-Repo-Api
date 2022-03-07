@@ -13,8 +13,8 @@ const App = () => {
   const [markdown, setMarkdown] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [repoCount, setRepoCount] = useState(0);
-  const [pageSize, setPageSize] = useState(30);
-  const [user, setUser] = useState(window.location.href.split("/github/")[1]);
+  const user = window.location.href.split("/github/")[1];
+  const pageSize = 30;
 
   useEffect(async () => {
     const totalCount = await getRepoCount(user, repoCount);
