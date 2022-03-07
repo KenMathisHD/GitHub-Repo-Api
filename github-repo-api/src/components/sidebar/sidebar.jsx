@@ -15,7 +15,7 @@ function Sidebar(props) {
 
   function onScroll(e) {
     const { target } = e;
-    if (target.scrollTop === target.scrollHeight - target.clientHeight) {
+    if (target.scrollTop >= target.scrollHeight - target.offsetHeight) {
       handleScroll();
     }
   }
